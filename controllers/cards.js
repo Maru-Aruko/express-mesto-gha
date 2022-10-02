@@ -1,44 +1,48 @@
 const Card = require('../models/card');
-const { BAD_REQUEST, NOT_FOUND, INTERNAL_SERVER_ERROR } = require('../utils/constants');
+const NotFoundError = require('../Errors/NotFoundError');
+const ValidError = require('../Errors/ValidError');
+const ForbiddenError = require('../Errors/ForbiddenError');
 
-module.exports.getCards = (req, res) => {
+module.exports.getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => res.send({ data: cards }))
-    .catch(() => {
-      res.status(INTERNAL_SERVER_ERROR).send({ message: 'На сервере произошла ошибка' });
-    });
+    .catch(next);
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
   const owner = req.user._id;
   Card.create({ name, link, owner })
     .then((newCard) => res.send({ data: newCard }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(BAD_REQUEST).send({ message: ' Переданы некорректные данные при создании карточки.' });
+        next(new ValidError('Переданы некорректные данные при создании карточки.'));
+      } else {
+        next(err);
       }
-      return res.status(INTERNAL_SERVER_ERROR).send({ message: 'На сервере произошла ошибка.' });
     });
 };
 
-module.exports.deleteCardById = (req, res) => {
+module.exports.deleteCardById = (req, res, next) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
       if (!card) {
-        return res.status(NOT_FOUND).send({ message: ' Карточка с указанным _id не найдена.' });
+        throw new NotFoundError(' Карточка с указанным _id не найдена.');
+      } else if (String(card.owner) !== req.user._id) {
+        throw new ForbiddenError('Доступ ограничен');
       }
       return res.send({ data: card });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res.status(BAD_REQUEST).send({ message: ' Введен некорректный _id карточки.' });
+        next(new ValidError(' Введен некорректный _id карточки.'));
+      } else {
+        next(err);
       }
-      return res.status(INTERNAL_SERVER_ERROR).send({ message: 'На сервере произошла ошибка.' });
     });
 };
 
-module.exports.addLike = (req, res) => {
+module.exports.addLike = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
@@ -46,19 +50,20 @@ module.exports.addLike = (req, res) => {
   )
     .then((cards) => {
       if (!cards) {
-        return res.status(NOT_FOUND).send({ message: ' Передан несуществующий _id карточки.' });
+        throw new NotFoundError(' Передан несуществующий _id карточки.');
       }
       return res.send({ data: cards });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res.status(BAD_REQUEST).send({ message: ' Переданы некорректные данные для постановки лайка.' });
+        next(new ValidError(' Переданы некорректные данные для постановки лайка.'));
+      } else {
+        next(err);
       }
-      return res.status(INTERNAL_SERVER_ERROR).send({ message: 'На сервере произошла ошибка.' });
     });
 };
 
-module.exports.deleteLike = (req, res) => {
+module.exports.deleteLike = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
@@ -66,14 +71,15 @@ module.exports.deleteLike = (req, res) => {
   )
     .then((cards) => {
       if (!cards) {
-        return res.status(NOT_FOUND).send({ message: ' Передан несуществующий _id карточки.' });
+        throw new NotFoundError(' Передан несуществующий _id карточки.');
       }
       return res.send({ data: cards });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res.status(BAD_REQUEST).send({ message: ' Переданы некорректные данные для снятия лайка.' });
+        next(new ValidError(' Переданы некорректные данные для снятия лайка.'));
+      } else {
+        next(err);
       }
-      return res.status(INTERNAL_SERVER_ERROR).send({ message: 'На сервере произошла ошибка.' });
     });
 };
