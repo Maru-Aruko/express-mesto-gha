@@ -39,29 +39,27 @@ module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
-  User.findOne({ email })
-    .then((user) => {
-      if (user) {
-        throw new ConflictError('Пользователь с этим email уже зарегистрирован в системе');
+  if (email) {
+    throw new ConflictError('Пользователь с этим email уже зарегистрирован в системе');
+  } return bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      name, about, avatar, email, password: hash,
+    }))
+    .then((newUser) => {
+      if (!newUser) {
+        throw new ValidError(' Переданы некорректные данные при создании пользователя.');
       }
-      bcrypt.hash(password, 10)
-        .then((hash) => User.create({
-          name, about, avatar, email, password: hash,
-        })
-          .then((newUser) => {
-            if (!newUser) {
-              throw new ValidError(' Переданы некорректные данные при создании пользователя.');
-            }
-            return res.send({
-              name: newUser.name,
-              about: newUser.about,
-              avatar: newUser.avatar,
-              email: newUser.email,
-              _id: newUser._id,
-            });
-          })).catch(next);
-    });
+      return res.send({
+        name: newUser.name,
+        about: newUser.about,
+        avatar: newUser.avatar,
+        email: newUser.email,
+        _id: newUser._id,
+      });
+    })
+    .catch(next);
 };
+
 
 module.exports.updateProfile = (req, res, next) => {
   const { name, about } = req.body;
