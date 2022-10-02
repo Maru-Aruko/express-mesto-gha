@@ -39,9 +39,7 @@ module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
-  if (email) {
-    throw new ConflictError('Пользователь с этим email уже зарегистрирован в системе');
-  } return bcrypt.hash(password, 10)
+  return bcrypt.hash(password, 10)
     .then((hash) => User.create({
       name, about, avatar, email, password: hash,
     }))
@@ -57,7 +55,13 @@ module.exports.createUser = (req, res, next) => {
         _id: newUser._id,
       });
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.code === 11000) {
+        next(new ConflictError('Пользователь с этим email уже зарегистрирован в системе'));
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports.updateProfile = (req, res, next) => {
