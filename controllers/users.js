@@ -43,20 +43,17 @@ module.exports.createUser = (req, res, next) => {
     .then((hash) => User.create({
       name, about, avatar, email, password: hash,
     }))
-    .then((newUser) => {
-      if (!newUser) {
-        throw new ValidError(' Переданы некорректные данные при создании пользователя.');
-      }
-      return res.send({
-        name: newUser.name,
-        about: newUser.about,
-        avatar: newUser.avatar,
-        email: newUser.email,
-        _id: newUser._id,
-      });
-    })
+    .then((newUser) => res.send({
+      name: newUser.name,
+      about: newUser.about,
+      avatar: newUser.avatar,
+      email: newUser.email,
+      _id: newUser._id,
+    }))
     .catch((err) => {
-      if (err.code === 11000) {
+      if (err.name === 'ValidationError') {
+        next(new ValidError(' Переданы некорректные данные при создании пользователя.'));
+      } else if (err.code === 11000) {
         next(new ConflictError('Пользователь с этим email уже зарегистрирован в системе'));
       } else {
         next(err);
@@ -102,9 +99,6 @@ module.exports.updateAvatar = (req, res, next) => {
 
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
-  if (!email || !password) {
-    throw new ValidError('Переданные некорректные данные при авторизации');
-  }
   User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {

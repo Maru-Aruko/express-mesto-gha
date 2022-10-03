@@ -24,13 +24,14 @@ module.exports.createCard = (req, res, next) => {
 };
 
 module.exports.deleteCardById = (req, res, next) => {
-  Card.findByIdAndRemove(req.params.cardId)
+  Card.findById(req.params.cardId)
     .then((card) => {
       if (!card) {
         throw new NotFoundError(' Карточка с указанным _id не найдена.');
       } else if (String(card.owner) !== req.user._id) {
         throw new ForbiddenError('Доступ ограничен');
       }
+      card.remove();
       return res.send({ data: card });
     })
     .catch((err) => {
