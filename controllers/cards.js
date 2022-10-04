@@ -31,8 +31,8 @@ module.exports.deleteCardById = (req, res, next) => {
       } else if (String(card.owner) !== req.user._id) {
         throw new ForbiddenError('Доступ ограничен');
       }
-      card.remove();
-      return res.send({ data: card });
+      card.remove()
+        .then(() => res.send({ message: 'Карточка удалена' }));
     })
     .catch((err) => {
       if (err.name === 'CastError') {
