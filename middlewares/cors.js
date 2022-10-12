@@ -1,5 +1,5 @@
 const allowedCors = [
-  'https://api.maru-aruko.nomoredomains.icu',
+  'https://api.maru-aruko.nomoredomains.icu/users/me',
   'https://maru-aruko.mesto.nomoredomains.icu',
 ];
 
