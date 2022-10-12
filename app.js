@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const { errors } = require('celebrate');
+const Cors = require('cors');
 const cors = require('./middlewares/cors');
 const routes = require('./routes/index');
 const handleError = require('./middlewares/handleError');
@@ -19,6 +20,10 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
+
+app.use(cors({
+  Origin: 'https://api.maru-aruko.nomoredomains.icu',
+}));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
