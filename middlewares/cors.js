@@ -1,6 +1,5 @@
 const allowedCors = [
   'https://api.maru-aruko.nomoredomains.icu',
-  'https://maru-aruko.mesto.nomoredomains.icu',
 ];
 
 const DEFAULT_ALLOWED_METHODS = 'GET,HEAD,PUT,PATCH,POST,DELETE';
