@@ -68,7 +68,7 @@ module.exports.updateProfile = (req, res, next) => {
       if (!updatedUser) {
         throw new NotFoundError(' Пользователь по указанному _id не найден.');
       }
-      return res.send({ data: updatedUser });
+      return res.send(updatedUser);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
