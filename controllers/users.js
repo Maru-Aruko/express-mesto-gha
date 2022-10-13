@@ -86,7 +86,7 @@ module.exports.updateAvatar = (req, res, next) => {
       if (!updatedAvatar) {
         throw new NotFoundError(' Пользователь по указанному _id не найден.');
       }
-      return res.send({ data: updatedAvatar });
+      return res.send(updatedAvatar);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
