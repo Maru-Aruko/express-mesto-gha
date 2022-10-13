@@ -56,7 +56,7 @@ module.exports.addLike = (req, res, next) => {
       if (!cards) {
         throw new NotFoundError(' Передан несуществующий _id карточки.');
       }
-      return res.send({ data: cards });
+      return res.send({ cards });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
