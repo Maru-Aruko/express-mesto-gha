@@ -3,10 +3,13 @@ const NotFoundError = require('../Errors/NotFoundError');
 const ValidError = require('../Errors/ValidError');
 const ForbiddenError = require('../Errors/ForbiddenError');
 
-module.exports.getCards = (req, res, next) => {
-  Card.find({})
-    .then((cards) => res.send({ cards }))
-    .catch(next);
+module.exports.getCards = async (req, res, next) => {
+  try {
+    const cards = await Card.find({}).populate(['likes', 'owner']).sort('-createdAt');
+    res.send(cards);
+  } catch (error) {
+    next(error);
+  }
 };
 
 module.exports.createCard = (req, res, next) => {
